@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const BASE_URL = 'https://ro-service-engineer-be.onrender.com/api/vendor';
+const BASE_URL = 'https://ro-service-engineer-be.onrender.com/api/manufacturer';
 
 // 1. Login Action
 export const loginUser = createAsyncThunk(
