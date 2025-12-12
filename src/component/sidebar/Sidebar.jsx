@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux"; // <--- 1. Import Hook
-import { logout } from "../../redux/authSlice"; // <--- 2. Import Action
+import { logoutUser } from "../../redux/authSlice"; // <--- 2. Import Action (thunk)
 
 import {
   Dashboard,
@@ -22,8 +22,7 @@ const Sidebar = () => {
 
   // --- LOGOUT LOGIC ---
   const handleLogout = () => {
-    dispatch(logout()); // Clear Token
-    navigate("/");      // Go to Login
+    dispatch(logoutUser()); // Clear Token and redirect
   };
 
   const sections = [
