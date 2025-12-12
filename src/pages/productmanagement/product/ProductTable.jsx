@@ -17,7 +17,7 @@ const ProductTable = ({ products, onDelete }) => {  // Add onDelete prop here
             <th className="px-4 py-3 border-b border-[#CACACA] text-center">Category</th>
             <th className="px-4 py-3 border-b border-[#CACACA] text-center">Product Name</th>
             <th className="px-4 py-3 border-b border-[#CACACA] text-center">Price</th>
-            <th className="px-4 py-3 border-b border-[#CACACA] text-center">Warranty</th>
+            <th className="px-4 py-3 border-b border-[#CACACA] text-center">Warranty Period</th>
             <th className="px-4 py-3 border-b border-[#CACACA] text-center">Description</th>
             <th className="px-4 py-3 border-b border-[#CACACA] text-center">Action</th>
           </tr>
@@ -31,8 +31,8 @@ const ProductTable = ({ products, onDelete }) => {  // Add onDelete prop here
               <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center truncate max-w-[150px]">
                 {item.name}
               </td>
-              <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">{item.price}</td>
-              <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700  text-center">{item.warranty}</td>
+                <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">{item.discountedPrice ?? item.price}</td>
+                <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700  text-center">{item.warrantyPeriod ?? item.warranty}</td>
               <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 truncate max-w-[200px] text-center">
                 {item.description}
               </td>

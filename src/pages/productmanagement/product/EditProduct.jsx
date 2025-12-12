@@ -1,52 +1,128 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { FaUpload } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getProductById, updateProduct } from "../../../redux/productSlice";
 import { MdArrowForwardIos } from "react-icons/md";
 import { FaRupeeSign, FaTrash } from "react-icons/fa";
-import product1 from "../../../assets/images/product1.jpg";
-import product2 from "../../../assets/images/product2.jpg";
-import product3 from "../../../assets/images/product3.jpg";
+// import product1 from "../../../assets/images/product1.jpg";
+// import product2 from "../../../assets/images/product2.jpg";
+// import product3 from "../../../assets/images/product3.jpg";
 import Dashboard from "../../../assets/images/Dashboard.svg";
 
 const EditProduct = () => {
   const navigate = useNavigate();
-  const [images, setImages] = useState([product1, product2, product3]);
+  const [images, setImages] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [existingImgUrls, setExistingImgUrls] = useState([]);
+  const dispatch = useDispatch();
+  const { id } = useParams();
+  const { productDetail } = useSelector((state) => state.product);
+  useEffect(() => {
+    if (id) dispatch(getProductById(id));
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    if (productDetail) {
+      setExistingImgUrls(productDetail.images || []);
+      setImages((productDetail.images || []).map((u) => u));
+    }
+  }, [productDetail]);
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setImages((prev) => [...prev, ...newImages]);
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setImages((prev) => [...prev, ...newPreviews]);
+    setImageFiles((prev) => [...prev, ...files]);
   };
 
-  const handleDelete = (index) => {
-    const updated = images.filter((_, i) => i !== index);
-    setImages(updated);
+  const handleDeleteNewImage = (newIndex) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== newIndex));
+    setImages((prev) => prev.filter((_, i) => i !== (existingImgUrls.length + newIndex)));
   };
+
+  const handleRemoveImage = (index) => {
+    // index refers to the combined images view: existing URLs first, then new previews
+    if (index < existingImgUrls.length) {
+      // remove existing
+      setExistingImgUrls((prev) => prev.filter((_, i) => i !== index));
+      setImages((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      // remove new file
+      const newIndex = index - existingImgUrls.length;
+      setImageFiles((prev) => prev.filter((_, i) => i !== newIndex));
+      setImages((prev) => prev.filter((_, i) => i !== index));
+    }
+  }; 
   const initialValues = {
-    category: "Spare Parts",
-    productName: "KENT ACE Plus- B 8 L RO + UV + UF + Alkaline + Copper + TDS",
-    price: "₹ 899.00",
-    warranty: "2 Years",
-    discount: "10 %",
-    description:
-      "Lorem ipsum dolor sit amet consectetur. Eros lacus sit posuere netus pharetra suspendisse. Semper augue elit pellentesque aliquam. Malesuada porttitor convallis mauris tempor pretium pellentesque. Facilisi consectetur eleifend vel integer lorem sit. Ornare tempor risus ipsum rhoncus vel rhoncus elit in lectus. Tristique neque mauris nascetur sem eget quam etiam egestas massa. Orci sed diam nunc pellentesque porttitor dui tellus. Est nec cum eros vel. In ultricies accumsan donec tellus. Nunc dui dignissim sem luctus ac congue. Dignissim mauris imperdiet netus porta. Donec ornare faucibus et aliquam rhoncus aenean.",
+    brand: productDetail?.brand || '',
+    category: productDetail?.category || 'Spare Parts',
+    productName: productDetail?.name || '',
+    price: productDetail?.price || '',
+    warrantyPeriod: productDetail?.warrantyPeriod || '',
+    discountPercent: productDetail?.discountPercent || '',
+    material: productDetail?.material || '',
+    color: productDetail?.color || '',
+    stock: productDetail?.stock ?? '',
+    description: productDetail?.description || '',
+    offers: Array.isArray(productDetail?.offers) ? productDetail.offers.join(', ') : (productDetail?.offers || ''),
+    isActive: productDetail?.isActive ?? true,
+    isFeatured: productDetail?.isFeatured ?? false,
+    existingImgUrls: productDetail?.images || [],
   };
 
   const validationSchema = Yup.object({
-    category: Yup.string().required("Category is required"),
-    productName: Yup.string().required("Product name is required"),
-    price: Yup.string().required("Price is required"),
-    warranty: Yup.string().required("Warranty is required"),
-    discount: Yup.string().required("Discount is required"),
-    description: Yup.string().required("Description is required"),
+    brand: Yup.string().required('Brand name is required'),
+    category: Yup.string().required('Category is required'),
+    productName: Yup.string().required('Product name is required'),
+    warrantyPeriod: Yup.number().typeError('Warranty period is required').required('Warranty period is required'),
+    price: Yup.number().typeError('Must be a number').required('Price is required'),
+    description: Yup.string().required('Description is required'),
   });
 
-  const handleSubmit = (values) => {
-    console.log("Edited Product:", values);
-    alert("Product updated successfully!");
+  const handleSubmit = async (values, { setErrors }) => {
+    const formData = new FormData();
+    formData.append('brand', values.brand);
+    formData.append('category', values.category);
+    formData.append('name', values.productName);
+    formData.append('color', values.color);
+    formData.append('stock', values.stock);
+    formData.append('warrantyPeriod', values.warrantyPeriod);
+    formData.append('price', values.price);
+    if (values.discountPercent) formData.append('discountPercent', values.discountPercent);
+    formData.append('material', values.material);
+    formData.append('description', values.description);
+    if (values.offers) {
+      values.offers.split(',').map((o) => o.trim()).filter(Boolean).forEach((o) => formData.append('offers', o));
+    }
+    // append existing image urls (if any)
+    (existingImgUrls || []).forEach((url) => {
+      if (url) formData.append('existingImgUrls', url);
+    });
+    // append new files
+    imageFiles.forEach((file) => formData.append('images', file));
+    // append booleans as strings
+    formData.append('isActive', String(values.isActive));
+    formData.append('isFeatured', String(values.isFeatured));
+
+    try {
+      const res = await dispatch(updateProduct({ productId: id, productData: formData })).unwrap();
+      // success
+      alert(res?.message || 'Product updated successfully!');
+      navigate('/product-list');
+    } catch (err) {
+      if (err && typeof err === 'object') {
+        if (Array.isArray(err.errors) && err.errors.length) {
+          const formErrors = err.errors.reduce((acc, e) => ({ ...acc, [e.field]: e.message }), {});
+          setErrors(formErrors);
+          return;
+        }
+      }
+      alert(err?.message || 'Failed to update product');
+    }
   };
 
   return (
@@ -82,6 +158,7 @@ const EditProduct = () => {
 
       <Formik
         initialValues={initialValues}
+        enableReinitialize
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
@@ -89,6 +166,11 @@ const EditProduct = () => {
           <Form className="space-y-6">
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Brand</label>
+                <Field type="text" name="brand" className="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200 bg-[#F5F5F5]" />
+                <ErrorMessage name="brand" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
               <div>
                 <label className="block text-gray-700 font-medium mb-1">
                   Category
@@ -135,7 +217,7 @@ const EditProduct = () => {
                 <div className="flex items-center border border-gray-300 rounded-md p-2 bg-[#F5F5F5]">
                   <FaRupeeSign className="text-gray-600 mr-1" />
                   <Field
-                    type="text"
+                    type="number"
                     name="price"
                     className="w-full bg-transparent outline-none"
                   />
@@ -149,36 +231,68 @@ const EditProduct = () => {
 
               <div>
                 <label className="block text-gray-700 font-medium mb-1">
-                  Warranty
+                  Warranty Period (months)
                 </label>
                 <Field
-                  type="text"
-                  name="warranty"
+                  type="number"
+                  name="warrantyPeriod"
                   className="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200 bg-[#F5F5F5]"
                 />
                 <ErrorMessage
-                  name="warranty"
+                  name="warrantyPeriod"
                   component="div"
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
             </div>
 
-            {/* Discount */}
+            {/* (discountPercent field provided below) */}
+
+            {/* Color + Stock */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Color</label>
+                <Field name="color" className="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200 bg-[#F5F5F5]" />
+                <ErrorMessage name="color" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Stock</label>
+                <Field type="number" name="stock" className="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200 bg-[#F5F5F5]" />
+                <ErrorMessage name="stock" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+            </div>
+
+            {/* Discount Percent + Material */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Discount Percent</label>
+                <Field type="number" name="discountPercent" className="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200 bg-[#F5F5F5]" />
+                <ErrorMessage name="discountPercent" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">Material</label>
+                <Field name="material" className="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200 bg-[#F5F5F5]" />
+                <ErrorMessage name="material" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+            </div>
+
+            {/* Offers */}
             <div>
-              <label className="block text-gray-700 font-medium mb-1">
-                Discount (%)
+              <label className="block text-gray-700 font-medium mb-1">Offers (comma separated)</label>
+              <Field name="offers" className="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200 bg-[#F5F5F5]" />
+              <ErrorMessage name="offers" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            {/* IsActive / IsFeatured */}
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2">
+                <Field type="checkbox" name="isActive" />
+                <span>Is Active</span>
               </label>
-              <Field
-                type="text"
-                name="discount"
-                className="w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200 bg-[#F5F5F5]"
-              />
-              <ErrorMessage
-                name="discount"
-                component="div"
-                className="text-red-500 text-sm mt-1"
-              />
+              <label className="flex items-center gap-2">
+                <Field type="checkbox" name="isFeatured" />
+                <span>Is Featured</span>
+              </label>
             </div>
 
             {/* Description */}
