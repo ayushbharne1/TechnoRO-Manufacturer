@@ -125,10 +125,10 @@ const ProductDetails = () => {
               )}
               {/* <li>
                 Lorem ipsum dolor sit amet consectetur. Netus bibendum 
-                lorem ullamcorper id. Amet mattis eu fringilla nibh interdum.
+                lorem ullamcorper id. Amet mattis  fringilla nibh interdum.
               </li>
               <li>
-                Pharetra sit in risus felis dictum enim suspendisse sodales.
+                Pharetra sit in risus  dictum enim suspendisse sodales.
                 Lobortis aliquam morbi tortor aliquet pretium eu.
               </li>
               <li>
