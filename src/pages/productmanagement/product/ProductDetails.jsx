@@ -124,7 +124,7 @@ const ProductDetails = () => {
                 <li>Rating: {product.rating} ({product.reviews} reviews)</li>
               )}
               {/* <li>
-                Lorem ipsum dolor sit amet consectetur. Netus bibendum duis
+                Lorem ipsum dolor sit amet consectetur. Netus bibendum 
                 lorem ullamcorper id. Amet mattis eu fringilla nibh interdum.
               </li>
               <li>
