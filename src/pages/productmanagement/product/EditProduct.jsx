@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getProductById, updateProduct } from "../../../redux/productSlice";
+import { toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 import { MdArrowForwardIos } from "react-icons/md";
 import { FaRupeeSign, FaTrash } from "react-icons/fa";
 // import product1 from "../../../assets/images/product1.jpg";
@@ -96,7 +98,9 @@ const EditProduct = () => {
     formData.append('material', values.material);
     formData.append('description', values.description);
     if (values.offers) {
-      values.offers.split(',').map((o) => o.trim()).filter(Boolean).forEach((o) => formData.append('offers', o));
+      // send offers as array (split comma-separated string)
+      const offersArr = values.offers.split(',').map(o => o.trim()).filter(Boolean);
+      offersArr.forEach(o => formData.append('offers[]', o));
     }
     // append existing image urls (if any)
     (existingImgUrls || []).forEach((url) => {
@@ -111,7 +115,10 @@ const EditProduct = () => {
     try {
       const res = await dispatch(updateProduct({ productId: id, productData: formData })).unwrap();
       // success
-      alert(res?.message || 'Product updated successfully!');
+      toast.success(res?.message ?? 'Product updated successfully!');
+      // clear local image state
+      setImages([]);
+      setImageFiles([]);
       navigate('/product-list');
     } catch (err) {
       if (err && typeof err === 'object') {
@@ -121,7 +128,7 @@ const EditProduct = () => {
           return;
         }
       }
-      alert(err?.message || 'Failed to update product');
+      toast.error(err?.message || 'Failed to update product');
     }
   };
 

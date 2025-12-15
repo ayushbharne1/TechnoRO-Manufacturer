@@ -61,7 +61,9 @@ const AddProduct = () => {
     formData.append('material', values.material);
     formData.append('description', values.description);
     if (values.offers) {
-      values.offers.split(',').map((o) => o.trim()).filter(Boolean).forEach((o) => formData.append('offers', o));
+      // send offers as array (split comma-separated string)
+      const offersArr = values.offers.split(',').map(o => o.trim()).filter(Boolean);
+      offersArr.forEach(o => formData.append('offers[]', o));
     }
     imageFiles.forEach((file) => formData.append('images', file));
 
@@ -266,10 +268,10 @@ const AddProduct = () => {
             </div>
 
             <div className="mb-6">
-              <label className="block font-medium text-gray-700 mb-2">Offers (comma separated)</label>
+              <label className="block font-medium text-gray-700 mb-2">Offers</label>
               <Field
                 name="offers"
-                placeholder="Enter offers, e.g., Free Installation, 2 Year Warranty"
+                placeholder="Enter offers"
                 className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               <ErrorMessage name="offers" component="div" className="text-red-500 text-sm mt-1" />
