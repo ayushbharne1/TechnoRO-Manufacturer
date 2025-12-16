@@ -1,64 +1,41 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FiPrinter } from "react-icons/fi";
 import { MdArrowForwardIos } from "react-icons/md";
 import { useNavigate, useParams } from "react-router-dom";
 import Dashboard from "../../assets/images/Dashboard.svg";
 
+// --- REDUX IMPORTS ---
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOrderById } from "../../redux/orderSlice";
+
 const InvoicePage = () => {
   const navigate = useNavigate();
-  const { orderId } = useParams();
-  const invoiceItems = [
-    {
-      name: "Water Purifier Ultra UV",
-      hsn: "WP123",
-      gst: "18%",
-      discount: 500,
-      qty: 200,
-      rate: 5000,
-      amount: "10,00,000",
-      total: "50,00,000",
-    },
-    {
-      name: "Prefilter RO Service Kit",
-      hsn: "WP123",
-      gst: "18%",
-      discount: 500,
-      qty: 200,
-      rate: 5000,
-      amount: "10,00,000",
-      total: "50,00,000",
-    },
-    {
-      name: "Water Softener",
-      hsn: "WP123",
-      gst: "18%",
-      discount: 500,
-      qty: 200,
-      rate: 5000,
-      amount: "10,00,000",
-      total: "50,00,000",
-    },
-    {
-      name: "Smart RO UV Purifier",
-      hsn: "WP123",
-      gst: "18%",
-      discount: 500,
-      qty: 200,
-      rate: 5000,
-      amount: "10,00,000",
-      total: "50,00,000",
-    },
-    {
-      name: "Water Ionizer",
-      hsn: "WP123",
-      gst: "18%",
-      discount: 500,
-      qty: 200,
-      rate: 5000,
-      amount: "10,00,000",
-      total: "50,00,000",
-    },
-  ];
+  const { id } = useParams(); // Matches route /invoice/:id
+  const dispatch = useDispatch();
+
+  // 1. Get Real Data
+  const { currentOrder, isLoading } = useSelector((state) => state.orders);
+
+  // 2. Fetch Data on Load
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchOrderById(id));
+    }
+  }, [id, dispatch]);
+
+  if (isLoading) return <div className="p-10 text-center text-gray-500">Generating Invoice...</div>;
+  if (!currentOrder) return <div className="p-10 text-center text-red-500">Invoice details not found.</div>;
+
+  // --- DATA MAPPING ---
+  const customer = currentOrder.customer || {};
+  const address = currentOrder.shippingAddress || {};
+  const manufacturer = currentOrder.assignedManufacturerId || {};
+  const items = currentOrder.items || [];
+  
+  // Dates
+  const invoiceDate = currentOrder.orderedDate 
+    ? new Date(currentOrder.orderedDate).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' })
+    : "N/A";
 
   return (
     <>
@@ -75,6 +52,7 @@ const InvoicePage = () => {
             left: 0;
             top: 0;
             width: 100%;
+            padding: 20px;
           }
           .no-print {
             display: none !important;
@@ -86,12 +64,12 @@ const InvoicePage = () => {
         {/* Breadcrumb - Will not print */}
         <div className="flex items-center text-sm text-gray-500 mb-4 no-print">
           <span className="text-gray-500 font-medium">
-            <img src={Dashboard} onClick={() => navigate("/dashboard")} alt="Dashboard Icon" className="inline w-5 h-5 mr-1" />
+            <img src={Dashboard} onClick={() => navigate("/dashboard")} alt="Dashboard Icon" className="inline w-5 h-5 mr-1 cursor-pointer" />
           </span>
           <MdArrowForwardIos className="text-gray-400 w-5 h-8 mx-1" />
           <span onClick={() => navigate("/order-management")} className="text-gray-900 font-medium cursor-pointer">Order Management</span>
           <MdArrowForwardIos className="text-gray-400 w-5 h-8 mx-1" />
-          <span onClick={() => navigate(`/order-details/${orderId}`)} className="text-gray-900 font-medium cursor-pointer">Order Details</span>
+          <span onClick={() => navigate(`/order-details/${id}`)} className="text-gray-900 font-medium cursor-pointer">Order Details</span>
           <MdArrowForwardIos className="text-gray-400 w-5 h-8 mx-1" />
           <span className="text-blue-600 font-medium cursor-pointer">
             Generate Invoice
@@ -116,21 +94,22 @@ const InvoicePage = () => {
           {/* Invoice Info */}
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
-              <p><span className="font-semibold text-gray-700">Name: </span>Nilson</p>
-              <p><span className="font-semibold text-gray-700">Email: </span>Nilson@vendor.com</p>
-              <p><span className="font-semibold text-gray-700">Number: </span>+91 987654321</p>
+              <p><span className="font-semibold text-gray-700">Name: </span>{customer.name || "N/A"}</p>
+              <p><span className="font-semibold text-gray-700">Email: </span>{customer.email || "N/A"}</p>
+              <p><span className="font-semibold text-gray-700">Number: </span>{customer.phone || address.phone || "N/A"}</p>
             </div>
             <div className="text-right">
-              <p><span className="font-semibold text-gray-700">Invoice No.: </span>NC-23432</p>
-              <p><span className="font-semibold text-gray-700">Invoice Date: </span>Dec 25, 2025</p>
+              <p><span className="font-semibold text-gray-700">Invoice No.: </span>{currentOrder.orderId}</p>
+              <p><span className="font-semibold text-gray-700">Invoice Date: </span>{invoiceDate}</p>
             </div>
           </div>
 
           {/* Billed Sections */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Manufacturer (Billed By) */}
             <div className="bg-gray-100 rounded-lg p-4">
               <h3 className="font-semibold text-gray-700 mb-2">Billed by</h3>
-              <p className="font-semibold">Techno RO Manufacturer</p>
+              <p className="font-semibold">{manufacturer.name || "Techno RO Manufacturer"}</p>
               <p>S1234 3rd Floor, Maharashtra, Nagpur, India</p>
               <p className="text-sm mt-2 text-gray-600">
                 <span className="font-semibold text-green-600">GSTIN:</span> 2TR2025123456Z123
@@ -140,15 +119,13 @@ const InvoicePage = () => {
               </p>
             </div>
 
+            {/* Customer (Billed To) */}
             <div className="bg-gray-100 rounded-lg p-4">
               <h3 className="font-semibold text-gray-700 mb-2">Billed to</h3>
-              <p className="font-semibold">Techno RO Vendors</p>
-              <p>S1234 3rd Floor, Delhi, Noida, India</p>
+              <p className="font-semibold">{customer.name || address.fullName}</p>
+              <p>{address.addressLine1}, {address.city}, {address.state} - {address.pincode}</p>
               <p className="text-sm mt-2 text-gray-600">
-                <span className="font-semibold text-green-600">GSTIN:</span> 2TR2025123456Z123
-              </p>
-              <p className="text-sm text-gray-600">
-                <span className="font-semibold text-blue-600">PAN:</span> TRI2345TRMN
+                <span className="font-semibold text-green-600">Phone:</span> {address.phone}
               </p>
             </div>
           </div>
@@ -161,7 +138,7 @@ const InvoicePage = () => {
                   <th className="px-4 py-2 text-left">Name & Description</th>
                   <th className="px-4 py-2 text-left">HSN</th>
                   <th className="px-4 py-2 text-left">GST Rates</th>
-                  <th className="px-4 py-2 text-left">Discount%</th>
+                  <th className="px-4 py-2 text-left">Discount</th>
                   <th className="px-4 py-2 text-left">QTY.</th>
                   <th className="px-4 py-2 text-left">Rate</th>
                   <th className="px-4 py-2 text-left">Amount</th>
@@ -169,25 +146,63 @@ const InvoicePage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white text-gray-700">
-                {invoiceItems.map((item, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="px-4 py-3">{item.name}</td>
-                    <td className="px-4 py-3">{item.hsn}</td>
-                    <td className="px-4 py-3">{item.gst}</td>
-                    <td className="px-4 py-3">{item.discount}</td>
-                    <td className="px-4 py-3">{item.qty}</td>
-                    <td className="px-4 py-3">{item.rate}</td>
-                    <td className="px-4 py-3">{item.amount}</td>
-                    <td className="px-4 py-3 font-semibold">{item.total}</td>
-                  </tr>
-                ))}
+                {items.map((item, index) => {
+                  // Calculate dynamic values
+                  const rate = item.price || 0;
+                  const qty = item.quantity || 1;
+                  const amount = rate * qty; // Amount before discount
+                  const discount = item.discount || 0;
+                  const total = item.subtotal || (amount - discount);
+
+                  return (
+                    <tr key={index} className="border-t">
+                      <td className="px-4 py-3">{item.name}</td>
+                      <td className="px-4 py-3">8421</td> {/* Static HSN */}
+                      <td className="px-4 py-3">18%</td> {/* Static GST */}
+                      <td className="px-4 py-3 text-red-500">{discount > 0 ? `-₹${discount}` : '0'}</td>
+                      <td className="px-4 py-3">{qty}</td>
+                      <td className="px-4 py-3">₹{rate}</td>
+                      <td className="px-4 py-3">₹{amount}</td>
+                      <td className="px-4 py-3 font-semibold">₹{total}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+
+          {/* Total Summary */}
+          <div className="flex justify-end mt-4 px-4">
+             <div className="w-1/3 space-y-2">
+                <div className="flex justify-between text-gray-600">
+                   <span>Subtotal:</span>
+                   <span>₹{currentOrder.subtotal}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                   <span>Taxes & Fees:</span>
+                   <span>+ ₹{currentOrder.taxesAndFees}</span>
+                </div>
+                <div className="flex justify-between text-gray-600">
+                   <span>Shipping:</span>
+                   <span>+ ₹{currentOrder.shippingCost}</span>
+                </div>
+                {currentOrder.plateformFess > 0 && (
+                    <div className="flex justify-between text-gray-600">
+                        <span>Platform Fee:</span>
+                        <span>+ ₹{currentOrder.plateformFess}</span>
+                    </div>
+                )}
+                <div className="flex justify-between border-t border-gray-300 pt-2 text-lg font-bold text-gray-800">
+                   <span>Grand Total:</span>
+                   <span className="text-blue-600">₹{currentOrder.totalAmount}</span>
+                </div>
+             </div>
+          </div>
+
         </div>
       </div>
     </>
   );
 };
 
-export default InvoicePage;   
+export default InvoicePage;
