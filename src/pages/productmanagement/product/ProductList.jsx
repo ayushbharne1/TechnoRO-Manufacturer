@@ -1,72 +1,30 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import ProductTable from "./ProductTable";
 import { MdArrowForwardIos } from "react-icons/md";
 import Dashboard from "../../../assets/images/Dashboard.svg";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllProducts } from "../../../redux/productSlice";
 
 const ProductList = () => {
   const navigate = useNavigate();
 
-  // Add state for managing products and modal
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      category: "Water Purifier",
-      name: "Prefilter RO Service Kit",
-      price: "21-10-2025",
-      warranty: "NA",
-      description: "Lorem ipsum dolor sit amet...",
-    },
-    {
-      id: 2,
-      category: "Water Ionizer",
-      name: "Kent Grand Plus RO",
-      price: "21-10-2025",
-      warranty: "2 Year",
-      description: "Lorem ipsum dolor sit amet...",
-    },
-    {
-      id: 3,
-      category: "Water Ionizer",
-      name: "Kent Grand Plus RO",
-      price: "21-10-2025",
-      warranty: "3 Year",
-      description: "Lorem ipsum dolor sit amet...",
-    },
-    {
-      id: 4,
-      category: "Water Ionizer",
-      name: "Kent Grand Plus RO",
-      price: "21-10-2025",
-      warranty: "2 Year",
-      description: "Lorem ipsum dolor sit amet...",
-    },
-    {
-      id: 5,
-      category: "Water Ionizer",
-      name: "Kent Grand Plus RO",
-      price: "21-10-2025",
-      warranty: "6 Year",
-      description: "Lorem ipsum dolor sit amet...",
-    },
-    {
-      id: 6,
-      category: "Water Ionizer",
-      name: "Kent Grand Plus RO",
-      price: "21-10-2025",
-      warranty: "2 Year",
-      description: "Lorem ipsum dolor sit amet...",
-    },
-    {
-      id: 7,
-      category: "Water Ionizer",
-      name: "Kent Grand Plus RO",
-      price: "21-10-2025",
-      warranty: "1 Year",
-      description: "Lorem ipsum dolor sit amet...",
-    },
-  ]);
+  const dispatch = useDispatch();
+  const { products, pagination, isLoading, error } = useSelector((state) => state.product);
+  const [visibleProducts, setVisibleProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [search, setSearch] = useState("");
+  useEffect(() => {
+    // trim search to avoid sending blank whitespace
+    const s = search?.trim();
+    dispatch(getAllProducts({ page, limit, search: s }));
+  }, [dispatch, page, limit, search]);
+
+  useEffect(() => {
+    setVisibleProducts(products ?? []);
+  }, [products]);
 
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
@@ -134,7 +92,7 @@ const ProductList = () => {
 
   const handleDeleteConfirm = () => {
     if (deleteModal.product) {
-      setProducts(products.filter((p) => p.id !== deleteModal.product.id));
+      setVisibleProducts(visibleProducts.filter((p) => p.id !== deleteModal.product.id));
     }
     setDeleteModal({ isOpen: false, product: null });
   };
@@ -175,10 +133,14 @@ const ProductList = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-3">
           <div className="flex items-center space-x-2 text-gray-600">
             <span>Show</span>
-            <select className="border rounded-md px-2 py-1 text-gray-700 focus:ring-1 focus:ring-[#8DC9BE]">
-              <option>10</option>
-              <option>25</option>
-              <option>50</option>
+            <select
+              value={limit}
+              onChange={(e) => { setLimit(Number(e.target.value)); setPage(1); }}
+              className="border rounded-md px-2 py-1 text-gray-700 focus:ring-1 focus:ring-[#8DC9BE]"
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
             </select>
             <span>Entries</span>
           </div>
@@ -191,6 +153,8 @@ const ProductList = () => {
             <input
               type="text"
               placeholder="Search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="border rounded-md px-2 py-1 pl-8 w-64 focus:ring-1 focus:ring-[#8DC9BE] text-gray-700 border-[#263138]"
             />
           </div>
@@ -203,25 +167,41 @@ const ProductList = () => {
         </div>
 
         {/* Table Component - Pass onDelete handler */}
-        <ProductTable products={products} onDelete={handleDeleteClick} />
+        <ProductTable products={visibleProducts.length ? visibleProducts : products} onDelete={handleDeleteClick} />
 
         {/* Pagination */}
         <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
-          <p>Showing 1 to {products.length} of {products.length} Entries</p>
+          {(() => {
+            const start = pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1;
+            const end = start === 0 ? 0 : start + products.length - 1;
+            return (
+              <p>
+                Showing {start} to {end} of {pagination.total} Entries
+              </p>
+            );
+          })()}
           <div className="flex gap-2">
-            <button className="border rounded-md px-3 py-1 text-gray-600">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="border rounded-md px-3 py-1 text-gray-600"
+            >
               Previous
             </button>
-            <button className="bg-[#8DC9BE] text-white rounded-md px-3 py-1">
-              1
-            </button>
-            <button className="border rounded-md px-3 py-1 text-gray-600">
-              2
-            </button>
-            <button className="border rounded-md px-3 py-1 text-gray-600">
-              3
-            </button>
-            <button className="border rounded-md px-3 py-1 text-gray-600">
+            {Array.from({ length: pagination.pages || 1 }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i + 1)}
+                className={`rounded-md px-3 py-1 ${page === i + 1 ? 'bg-[#8DC9BE] text-white' : 'border text-gray-600'}`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage((p) => Math.min(pagination.pages || 1, p + 1))}
+              disabled={page >= (pagination.pages || 1)}
+              className="border rounded-md px-3 py-1 text-gray-600"
+            >
               Next
             </button>
           </div>

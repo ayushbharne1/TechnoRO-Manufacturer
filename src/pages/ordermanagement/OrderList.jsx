@@ -1,102 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { FiEye } from "react-icons/fi";
 import Dashboard from "../../assets/images/Dashboard.svg";
 import { MdArrowForwardIos } from "react-icons/md";
 
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllOrders } from "../../redux/orderSlice";
+
 const OrderList = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { ordersList, isLoading } = useSelector((state) => state.orders);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [entries, setEntries] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const orders = [
-    {
-      id: 1,
-      orderId: "125120",
-      name: "Prefilter RO Service Kit Pre-filter Housing Bowl",
-      price: 1299,
-      date: "21-10-2025",
-      status: "New",
-    },
-    {
-      id: 2,
-      orderId: "125120",
-      name: "Kent Grand Plus RO",
-      price: 1299,
-      date: "21-10-2025",
-      status: "New",
-    },
-    {
-      id: 3,
-      orderId: "125120",
-      name: "MG678",
-      price: 1299,
-      date: "21-10-2025",
-      status: "In-Progress",
-    },
-    {
-      id: 4,
-      orderId: "125120",
-      name: "Kent Grand Plus RO",
-      price: 1299,
-      date: "21-10-2025",
-      status: "In-Progress",
-    },
-    {
-      id: 5,
-      orderId: "125120",
-      name: "MG678",
-      price: 1299,
-      date: "21-10-2025",
-      status: "In-Progress",
-    },
-    {
-      id: 6,
-      orderId: "125120",
-      name: "Kent Grand Plus RO",
-      price: 1299,
-      date: "21-10-2025",
-      status: "In-Progress",
-    },
-    {
-      id: 7,
-      orderId: "125120",
-      name: "MG678",
-      price: 1299,
-      date: "21-10-2025",
-      status: "In-Progress",
-    },
-    {
-      id: 8,
-      orderId: "125120",
-      name: "Kent Grand Plus RO",
-      price: 1299,
-      date: "21-10-2025",
-      status: "In-Progress",
-    },
-    {
-      id: 9,
-      orderId: "125120",
-      name: "MG678",
-      price: 1299,
-      date: "21-10-2025",
-      status: "Delivered",
-    },
-    {
-      id: 10,
-      orderId: "125120",
-      name: "Kent Grand Plus RO",
-      price: 1299,
-      date: "21-10-2025",
-      status: "Delivered",
-    },
-  ];
+  useEffect(() => {
+    dispatch(fetchAllOrders());
+  }, [dispatch]);
 
-  const filteredOrders = orders.filter((o) =>
-    o.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const safeOrders = Array.isArray(ordersList) ? ordersList : [];
+
+  const filteredOrders = safeOrders.filter((order) => {
+    const term = searchTerm.toLowerCase();
+    const idMatch = order.orderId?.toLowerCase().includes(term);
+    const productMatch = order.items?.[0]?.name?.toLowerCase().includes(term);
+    return idMatch || productMatch;
+  });
 
   const totalPages = Math.ceil(filteredOrders.length / entries);
   const displayedOrders = filteredOrders.slice(
@@ -104,11 +37,27 @@ const OrderList = () => {
     currentPage * entries
   );
 
-  const getStatusColor = (status) => {
-    if (status === "New") return "text-yellow-500";
-    if (status === "In-Progress") return "text-blue-500";
-    if (status === "Delivered") return "text-green-500";
-    return "";
+  const getStatusConfig = (status) => {
+    if (!status) return { label: "Unknown", color: "text-gray-500" };
+    const s = status.toLowerCase();
+
+    if (s === "assigned" || s === "new") {
+      return { label: "New", color: "text-yellow-500" };
+    }
+    
+    if (["confirmed", "picked-up", "shipped", "out-for-delivery", "processing"].includes(s)) {
+      return { label: "In-Progress", color: "text-blue-500" };
+    }
+
+    if (s === "delivered") {
+      return { label: "Delivered", color: "text-green-500" };
+    }
+
+    if (s === "rejected") {
+      return { label: "Rejected", color: "text-red-500" };
+    }
+
+    return { label: status, color: "text-gray-500" };
   };
 
   return (
@@ -117,27 +66,29 @@ const OrderList = () => {
       animate={{ opacity: 1, y: 0 }}
       className="p-4 bg-white min-h-screen"
     >
-      {/* Breadcrumb */}
       <div className="flex items-center text-sm text-gray-600 mb-2">
         <span className="text-gray-500 font-medium">
-          <img src={Dashboard} onClick={() => navigate("/dashboard")} alt="Dashboard Icon" className="inline w-5 h-5 mr-1" />
+          <img src={Dashboard} onClick={() => navigate("/dashboard")} alt="Dashboard Icon" className="inline w-5 h-5 mr-1 cursor-pointer" />
         </span>
         <MdArrowForwardIos className="text-gray-400 w-5 h-8 mx-1" />
         <span className="text-[#4A90E2] font-medium cursor-pointer">
           Order Management
         </span>
       </div>
+
       <h2 className="text-2xl font-semibold text-gray-700 mb-2">Order List</h2>
       <div className="border-b-2 border-gray-400 mb-2 mt-4"></div>
-      {/* Controls */}
+
       <div className="flex items-center mb-4">
-        {/* Left: Show Entries */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-700">Show</span>
           <select
             className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-gray-400 bg-white"
             value={entries}
-            onChange={(e) => setEntries(parseInt(e.target.value))}
+            onChange={(e) => {
+              setEntries(parseInt(e.target.value));
+              setCurrentPage(1);
+            }}
           >
             {[10, 20, 30].map((n) => (
               <option key={n} value={n}>
@@ -148,7 +99,6 @@ const OrderList = () => {
           <span className="text-sm text-gray-700">Entries</span>
         </div>
 
-        {/* Search - with more spacing */}
         <div className="relative ml-20">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +115,6 @@ const OrderList = () => {
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto border border-gray-200 rounded-md">
         <table className="w-full text-sm text-left border border-[#CACACA] border-separate border-spacing-0 rounded-md overflow-hidden">
           <thead className="bg-[#F5F5F5] text-gray-600 font-medium">
@@ -180,32 +129,62 @@ const OrderList = () => {
             </tr>
           </thead>
           <tbody className="bg-white">
-            {displayedOrders.map((order, index) => (
-              <tr key={order.id} className="">
-                <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">{index + 1}</td>
-                <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">{order.orderId}</td>
-                <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 truncate max-w-xs text-center">
-                  {order.name}
-                </td>
-                <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">₹{order.price}</td>
-                <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">{order.date}</td>
-                <td
-                  className={`px-4 py-3 border-b border-[#CACACA] text-center font-medium ${getStatusColor(
-                    order.status
-                  )}`}
-                >
-                  {order.status}
-                </td>
-                <td className="px-4 py-3 border-b border-[#CACACA] text-center">
-                  <button
-                    className="text-blue-500 mx-auto"
-                    onClick={() => navigate(`/order-details/${order.id}`)}
-                  >
-                    <FiEye size={18} />
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {isLoading ? (
+              <tr><td colSpan="7" className="text-center py-6 text-gray-500">Loading Orders...</td></tr>
+            ) : displayedOrders.length === 0 ? (
+              <tr><td colSpan="7" className="text-center py-6 text-gray-500">No Orders Found</td></tr>
+            ) : (
+              displayedOrders.map((order, index) => {
+                const { label, color } = getStatusConfig(order.orderStatus);
+                const dateStr = order.orderedDate 
+                    ? new Date(order.orderedDate).toLocaleDateString('en-GB') // 21-10-2025 format
+                    : "N/A";
+
+                return (
+                  <tr key={order._id || index} className="">
+                    {/* Sr No */}
+                    <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">
+                      {(currentPage - 1) * entries + index + 1}
+                    </td>
+                    
+                    {/* Order ID */}
+                    <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">
+                      {order.orderId}
+                    </td>
+                    
+                    {/* Product Name */}
+                    <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 truncate max-w-xs text-center">
+                      {order.items && order.items.length > 0 ? order.items[0].name : "N/A"}
+                    </td>
+                    
+                    {/* Price */}
+                    <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">
+                      ₹{order.totalAmount}
+                    </td>
+                    
+                    {/* Date */}
+                    <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">
+                      {dateStr}
+                    </td>
+                    
+                    {/* Status */}
+                    <td className={`px-4 py-3 border-b border-[#CACACA] text-center font-medium ${color}`}>
+                      {label}
+                    </td>
+                    
+                    {/* Action */}
+                    <td className="px-4 py-3 border-b border-[#CACACA] text-center">
+                      <button
+                        className="text-blue-500 mx-auto"
+                        onClick={() => navigate(`/order-details/${order._id}`)}
+                      >
+                        <FiEye size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -213,8 +192,8 @@ const OrderList = () => {
       {/* Footer */}
       <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
         <span>
-          Showing {(currentPage - 1) * entries + 1} to 
-          {Math.min(currentPage * entries, filteredOrders.length)} of 
+          Showing {(currentPage - 1) * entries + 1} to{" "}
+          {Math.min(currentPage * entries, filteredOrders.length)} of{" "}
           {filteredOrders.length} Entries
         </span>
 
@@ -230,10 +209,11 @@ const OrderList = () => {
             <button
               key={i}
               onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 border rounded-md ${currentPage === i + 1
-                ? "bg-[#8DC9BE] text-white border-[#8DC9BE]"
-                : ""
-                }`}
+              className={`px-3 py-1 border rounded-md ${
+                currentPage === i + 1
+                  ? "bg-[#8DC9BE] text-white border-[#8DC9BE]"
+                  : ""
+              }`}
             >
               {i + 1}
             </button>

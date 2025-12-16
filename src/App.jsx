@@ -69,7 +69,7 @@ function App() {
             
             <Route path="order-management" element={<OrderList />} />
             <Route path="order-details/:id" element={<OrderDetails />} />
-            <Route path="invoice" element={<InvoicePage />} />
+            <Route path="invoice/:id" element={<InvoicePage />} />
             <Route path="reports" element={<StockConsumption />} />
 
             <Route path="notifications" element={<Notifications />} />

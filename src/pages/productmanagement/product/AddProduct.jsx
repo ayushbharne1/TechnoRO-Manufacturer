@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaTrashAlt, FaUpload } from "react-icons/fa";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import { useDispatch } from 'react-redux';
+import { createProduct } from '../../../redux/productSlice';
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -11,36 +13,80 @@ import Dashboard from "../../../assets/images/Dashboard.svg";
 
 const AddProduct = () => {
   const [images, setImages] = useState([]);
+  const [imageFiles, setImageFiles] = useState([]);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setImages((prev) => [...prev, ...newImages]);
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setImages((prev) => [...prev, ...newPreviews]);
+    setImageFiles((prev) => [...prev, ...files]);
   };
 
   const handleDelete = (index) => {
     const updatedImages = images.filter((_, i) => i !== index);
     setImages(updatedImages);
-  };
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  }; 
 
   const validationSchema = Yup.object({
-    category: Yup.string().required("Category is required"),
-    productName: Yup.string().required("Product name is required"),
-    price: Yup.number().typeError("Must be a number").required("Price is required"),
-    warranty: Yup.string().required("Warranty is required"),
-    description: Yup.string().required("Description is required"),
+    brand: Yup.string().required('Brand name is required'),
+    category: Yup.string().required('Category is required'),
+    productName: Yup.string().required('Product name is required'),
+    color: Yup.string().required('Color is required'),
+    stock: Yup.number().typeError('Stock quantity is required').required('Stock quantity is required'),
+    warrantyPeriod: Yup.number().typeError('Warranty period is required').required('Warranty period is required'),
+    price: Yup.number().typeError('Must be a number').required('Price is required'),
+    discountPercent: Yup.number().min(0).max(100),
+    material: Yup.string().required('Material is required'),
+    description: Yup.string().required('Description is required'),
+    offers: Yup.string(),
   });
 
-  const handleSubmit = (values, { resetForm }) => {
-    if (images.length === 0) {
+  const handleSubmit = async (values, { resetForm, setErrors }) => {
+    if (imageFiles.length === 0) {
       toast.error("Please upload at least one product image.");
       return;
     }
-    const formData = { ...values, images };
-    console.log("Submitted Data:", formData);
-    toast.success("Product added successfully!");
-    resetForm();
-    setImages([]);
+
+    const formData = new FormData();
+    formData.append('brand', values.brand);
+    formData.append('category', values.category);
+    formData.append('name', values.productName);
+    formData.append('color', values.color);
+    formData.append('stock', values.stock);
+    formData.append('warrantyPeriod', values.warrantyPeriod);
+    formData.append('price', values.price);
+    if (values.discountPercent) formData.append('discountPercent', values.discountPercent);
+    formData.append('material', values.material);
+    formData.append('description', values.description);
+    if (values.offers) {
+      values.offers.split(',').map((o) => o.trim()).filter(Boolean).forEach((o) => formData.append('offers', o));
+    }
+    imageFiles.forEach((file) => formData.append('images', file));
+
+    try {
+      const res = await dispatch(createProduct(formData)).unwrap();
+      toast.success(res?.message ?? 'Product added successfully!');
+      resetForm();
+      setImages([]);
+      setImageFiles([]);
+      navigate('/product-list');
+    } catch (err) {
+      if (err && typeof err === 'object') {
+        if (Array.isArray(err.errors) && err.errors.length) {
+          const formErrors = err.errors.reduce((acc, e) => ({ ...acc, [e.field]: e.message }), {});
+          setErrors(formErrors);
+          toast.error(err.message || 'Validation error');
+          return;
+        }
+        if (err.message) {
+          toast.error(err.message);
+          return;
+        }
+      }
+      toast.error(err || 'Failed to add product');
+    }
   };
 
   return (
@@ -76,18 +122,38 @@ const AddProduct = () => {
 
       <Formik
         initialValues={{
+          brand: '',
           category: "",
           productName: "",
+          color: '',
+          stock: '',
+          warrantyPeriod: '',
           price: "",
-          warranty: "",
+          discountPercent: '',
+          material: '',
           description: "",
-        }}
+          offers: '',
+        }} 
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
         {({ resetForm }) => (
           <Form>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">Brand</label>
+                <Field
+                  name="brand"
+                  placeholder="Enter Brand Name"
+                  className="w-full border bg-[#F5F5F5] border-gray-300  p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <ErrorMessage
+                  name="brand"
+                  component="div"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+
               <div>
                 <label className="block font-medium text-gray-700 mb-2">Category</label>
                 <Field
@@ -139,19 +205,74 @@ const AddProduct = () => {
                 />
               </div>
 
-              <div>
-                <label className="block font-medium text-gray-700 mb-2">Warranty</label>
+              <div className="md:col-span-2">
+                <label className="block font-medium text-gray-700 mb-2">Warranty Period (months)</label>
                 <Field
-                  name="warranty"
-                  placeholder="Enter Warranty"
+                  name="warrantyPeriod"
+                  type="number"
+                  placeholder="Enter Warranty Period in months"
                   className="w-full border bg-[#F5F5F5] border-gray-300  p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <ErrorMessage
-                  name="warranty"
+                  name="warrantyPeriod"
                   component="div"
                   className="text-red-500 text-sm mt-1"
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">Color</label>
+                <Field
+                  name="color"
+                  placeholder="Enter Color"
+                  className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <ErrorMessage name="color" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">Stock</label>
+                <Field
+                  name="stock"
+                  type="number"
+                  placeholder="Enter Stock Quantity"
+                  className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <ErrorMessage name="stock" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">Discount Percent</label>
+                <Field
+                  name="discountPercent"
+                  type="number"
+                  placeholder="Enter Discount Percent"
+                  className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <ErrorMessage name="discountPercent" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+              <div>
+                <label className="block font-medium text-gray-700 mb-2">Material</label>
+                <Field
+                  name="material"
+                  placeholder="Enter Material"
+                  className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <ErrorMessage name="material" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block font-medium text-gray-700 mb-2">Offers (comma separated)</label>
+              <Field
+                name="offers"
+                placeholder="Enter offers, e.g., Free Installation, 2 Year Warranty"
+                className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+              <ErrorMessage name="offers" component="div" className="text-red-500 text-sm mt-1" />
             </div>
 
             <div className="mb-6">

@@ -1,7 +1,10 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux"; // <--- 1. Import Hook
-import { logout } from "../../redux/authSlice"; // <--- 2. Import Action
+import { logoutUser } from "../../redux/authSlice";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Swal from "sweetalert2";
 
 import {
   Dashboard,
@@ -22,8 +25,27 @@ const Sidebar = () => {
 
   // --- LOGOUT LOGIC ---
   const handleLogout = () => {
-    dispatch(logout()); // Clear Token
-    navigate("/");      // Go to Login
+  // Clear Token
+    // navigate("/");      // Go to Login
+
+
+    Swal.fire({
+    title: "Logout?",
+    text: "Are you sure you want to logout?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, logout",
+    cancelButtonText: "Cancel",
+    reverseButtons: true,
+  }).then((result) => {
+    if (result.isConfirmed) {
+         dispatch(logoutUser());
+      toast.success("Logout successful!");
+      // navigate("/auth/login");
+    }
+  });
   };
 
   const sections = [
@@ -32,7 +54,7 @@ const Sidebar = () => {
       items: [
         { path: "/product-list", label: "Product List", icon: ProductIcon },
         { path: "/inventory-management", label: "Inventory Management", icon: InventoryIcon },
-        { path: "/production-management", label: "Production Management", icon: ProductionIcon },
+        // { path: "/production-management", label: "Production Management", icon: ProductionIcon },
       ],
     },
     {
@@ -52,7 +74,7 @@ const Sidebar = () => {
       items: [
         { path: "/help-support", label: "Help & Support", icon: HelpIcon },
         { path: "/profile", label: "Profile", icon: ProfileIcon },
-        { path: "#", label: "Logout", icon: LogoutIcon, isLogout: true }, 
+        { path: "/auth/logout", label: "Logout", icon: LogoutIcon, isLogout: true }, 
       ],
     },
   ];
