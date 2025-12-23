@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
-import { store } from './redux/store.jsx'
+import { store } from '../src/redux/store.js'
 
 // ✅ FIX: Add curly braces around Provider
 import { Provider } from 'react-redux' 
