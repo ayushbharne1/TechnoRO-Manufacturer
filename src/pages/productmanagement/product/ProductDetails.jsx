@@ -116,19 +116,18 @@ const ProductDetails = () => {
             <h3 className="font-semibold text-gray-800 mb-2">Description</h3>
             <hr className="border-gray-200 mb-3" />
             <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
-                {(() => {
-                  const offersDisplay = product?.offers ? (Array.isArray(product.offers) ? product.offers.join(', ') : product.offers) : null;
-                  return offersDisplay ? <li>Offers: {offersDisplay}</li> : null;
-                })()}
+              {product?.offers && product.offers.length > 0 && (
+                <li>Offers: {product.offers.join(', ')}</li>
+              )}
               {product?.rating !== undefined && (
                 <li>Rating: {product.rating} ({product.reviews} reviews)</li>
               )}
-              {/* <li>
-                Lorem ipsum dolor sit amet consectetur. Netus bibendum 
-                lorem ullamcorper id. Amet mattis  fringilla nibh interdum.
+              <li>
+                Lorem ipsum dolor sit amet consectetur. Netus bibendum duis
+                lorem ullamcorper id. Amet mattis eu fringilla nibh interdum.
               </li>
               <li>
-                Pharetra sit in risus  dictum enim suspendisse sodales.
+                Pharetra sit in risus felis dictum enim suspendisse sodales.
                 Lobortis aliquam morbi tortor aliquet pretium eu.
               </li>
               <li>
@@ -146,7 +145,7 @@ const ProductDetails = () => {
               <li>
                 Eget sed ultrices mauris aliquam sed senectus quam sed
                 imperdiet. Arcu enim est facilisis consectetur.
-              </li> */}
+              </li>
 
             </ul>
           </div>

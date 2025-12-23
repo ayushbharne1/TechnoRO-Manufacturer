@@ -13,3 +13,6 @@ body {
 .scrollbar-hidden::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+.leaflet-container {
+  z-index: 0 !important;
+}
