@@ -1,5 +1,5 @@
 //  saumya 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FaPhoneAlt,
   FaEnvelope,
@@ -19,29 +19,65 @@ import ChangePasswordModal from "../../../component/overlay/ChangePasswordModal"
 import ChangeSuccessModal from "../../../component/overlay/ChangeSuccessModal";
 
 
-
 const Profile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // Map 
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  // 
   const { profile } = useSelector((state) => state.profile);
 
   const [showChangeModal, setShowChangeModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // GET ID from localStorage
- const phone = localStorage.getItem("phone");
+  const phone = localStorage.getItem("phone");
 
   //CALL API on load
-  
-useEffect(() => {
-  if (phone) {
-    dispatch(getProfile(phone));
-  }
-}, [dispatch, phone]);
+
+  useEffect(() => {
+    if (phone) {
+      dispatch(getProfile(phone));
+    }
+  }, [dispatch, phone]);
 
 
+  // map useeffect
+  useEffect(() => {
+    const loadMap = async () => {
+      if (!profile?.address || mapInstanceRef.current || !window.L || !mapRef.current) return;
 
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          profile.address
+        )}`
+      );
+      const data = await res.json();
+      if (!data.length) return;
+
+      const lat = data[0].lat;
+      const lon = data[0].lon;
+
+      const map = window.L.map(mapRef.current).setView([lat, lon], 13);
+
+      window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      window.L.marker([lat, lon])
+        .addTo(map)
+        .bindPopup(profile.address)
+        .openPopup();
+
+      mapInstanceRef.current = map;
+    };
+
+    loadMap();
+  }, [profile?.address]);
+
+  // 
   const handlePasswordChange = () => {
     setShowChangeModal(false);
     setShowSuccessModal(true);
@@ -103,7 +139,12 @@ useEffect(() => {
             {profile?.address || "--"}
           </p>
 
-          <img src={roadmap} alt="Map" className="w-full h-100 object-cover" />
+          {/* <img src={roadmap} alt="Map" className="w-full h-100 object-cover" /> */}
+          {/* changes for map */}
+          <div ref={mapRef} className="w-full h-100 object-cover" />
+          {/*  */}
+
+
         </div>
 
         {/* RIGHT SIDE */}
@@ -196,6 +237,7 @@ useEffect(() => {
       </div>
 
       {/* Change Password Button */}
+
       <div className="mt-8 flex justify-center">
         <button
           onClick={() => setShowChangeModal(true)}
@@ -215,12 +257,19 @@ useEffect(() => {
           <ChangeSuccessModal onClose={() => setShowSuccessModal(false)} />
         )}
       </div>
-    </div>
+      </div>
   );
 };
 
 export default Profile;
 
+
+
+
+
+
+
+// 
 // import React, { useState } from "react";
 // import {
 //   FaPhoneAlt,

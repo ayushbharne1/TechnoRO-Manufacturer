@@ -38,6 +38,7 @@ import StartNewChat from "./pages/other/help-support/StartNewChat";
 import Feedbacks from "./pages/other/help-support/Feedbacks";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import RegisterPage from "./pages/login/RegisterPage";
 
 function App() {
   return (
@@ -45,7 +46,7 @@ function App() {
       <ToastContainer position="top-center" autoClose={1500} />
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordForm />} />
         <Route path="/verifyOtp" element={<VerifyOtp />} />
         <Route path="/resetpassword" element={<ResetPassword />} />

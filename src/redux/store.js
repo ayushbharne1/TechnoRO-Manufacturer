@@ -4,6 +4,7 @@ import authReducer from './authSlice';
 import productReducer from './productSlice';
 import profileReducer from './profileSlice';
 import orderReducer from './orderSlice';
+import inventoryReducer from './inventorySlice';
 
 
 export const store = configureStore({
@@ -11,8 +12,8 @@ export const store = configureStore({
     auth: authReducer,
     product: productReducer,
     profile: profileReducer,
-    // Orders slice - used by OrderList and related pages
     orders: orderReducer,
+    inventory: inventoryReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

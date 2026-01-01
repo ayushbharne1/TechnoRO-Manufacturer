@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { FaTrashAlt, FaUpload } from "react-icons/fa";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, FieldArray } from "formik";
 import { useDispatch } from 'react-redux';
 import { createProduct } from '../../../redux/productSlice';
 import * as Yup from "yup";
@@ -27,20 +27,22 @@ const AddProduct = () => {
     const updatedImages = images.filter((_, i) => i !== index);
     setImages(updatedImages);
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
-  }; 
+  };
 
   const validationSchema = Yup.object({
     brand: Yup.string().required('Brand name is required'),
     category: Yup.string().required('Category is required'),
     productName: Yup.string().required('Product name is required'),
     color: Yup.string().required('Color is required'),
-    stock: Yup.number().typeError('Stock quantity is required').required('Stock quantity is required'),
-    warrantyPeriod: Yup.number().typeError('Warranty period is required').required('Warranty period is required'),
-    price: Yup.number().typeError('Must be a number').required('Price is required'),
-    discountPercent: Yup.number().min(0).max(100),
+    stock: Yup.number().min(0, "Stock cannot be negative").typeError('Stock quantity is required').required('Stock quantity is required'),
+    warrantyPeriod: Yup.number().min(0, "Warranty Period cannot be negative").typeError('Warranty period is required').required('Warranty period is required'),
+    price: Yup.number().min(0, "Price cannot be negative").typeError('Must be a number').required('Price is required'),
+    discountPercent: Yup.number().min(0, "Discount cannot be negative").min(0).max(100),
     material: Yup.string().required('Material is required'),
     description: Yup.string().required('Description is required'),
-    offers: Yup.string(),
+    // offers: Yup.string(), //sir
+    offers: Yup.array().of(Yup.string().trim()),
+
   });
 
   const handleSubmit = async (values, { resetForm, setErrors }) => {
@@ -48,7 +50,6 @@ const AddProduct = () => {
       toast.error("Please upload at least one product image.");
       return;
     }
-
     const formData = new FormData();
     formData.append('brand', values.brand);
     formData.append('category', values.category);
@@ -60,9 +61,19 @@ const AddProduct = () => {
     if (values.discountPercent) formData.append('discountPercent', values.discountPercent);
     formData.append('material', values.material);
     formData.append('description', values.description);
-    if (values.offers) {
-      values.offers.split(',').map((o) => o.trim()).filter(Boolean).forEach((o) => formData.append('offers', o));
+    // if (values.offers) {
+    //   values.offers.split(',').map((o) => o.trim()).filter(Boolean).forEach((o) => formData.append('offers', o));
+    // } 
+    // because now offers are save in array
+    if (Array.isArray(values.offers)) {
+      values.offers
+        .filter(o => o && o.trim())
+        .forEach(o => {
+          formData.append("offers", o.trim());
+        });
     }
+
+
     imageFiles.forEach((file) => formData.append('images', file));
 
     try {
@@ -101,7 +112,7 @@ const AddProduct = () => {
         <span className="text-gray-500 font-medium">
           <img src={Dashboard} onClick={() => navigate("/dashboard")} alt="Dashboard Icon" className="inline w-5 h-5 mr-1" />
         </span>
-         
+
 
         <MdArrowForwardIos className="text-gray-400 w-5 h-8 mx-1" />
         <span
@@ -132,8 +143,9 @@ const AddProduct = () => {
           discountPercent: '',
           material: '',
           description: "",
-          offers: '',
-        }} 
+          // offers: '',//sir
+          offers: [""],
+        }}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
       >
@@ -194,6 +206,14 @@ const AddProduct = () => {
                   <Field
                     name="price"
                     type="number"
+                    min="0"
+                    // if enter "e" or "-"
+                    onKeyDown={(e) => {
+                      if (e.key === "-" || e.key === "e") {
+                        e.preventDefault();
+                      }
+                    }}
+                    // 
                     placeholder="Enter Price"
                     className="w-full focus:outline-none bg-[#F5F5F5]"
                   />
@@ -210,6 +230,14 @@ const AddProduct = () => {
                 <Field
                   name="warrantyPeriod"
                   type="number"
+                  min="0"
+                  // if enter "e" or "-"
+                  onKeyDown={(e) => {
+                    if (e.key === "-" || e.key === "e") {
+                      e.preventDefault();
+                    }
+                  }}
+                  // 
                   placeholder="Enter Warranty Period in months"
                   className="w-full border bg-[#F5F5F5] border-gray-300  p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
@@ -236,6 +264,15 @@ const AddProduct = () => {
                 <Field
                   name="stock"
                   type="number"
+                  min="0"
+                  // if enter "e" or "-"
+                  onKeyDown={(e) => {
+                    if (e.key === "-" || e.key === "e") {
+                      e.preventDefault();
+                    }
+                  }}
+                  // 
+
                   placeholder="Enter Stock Quantity"
                   className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
@@ -249,6 +286,14 @@ const AddProduct = () => {
                 <Field
                   name="discountPercent"
                   type="number"
+                  min="0"
+                  // if enter "e" or "-"
+                  onKeyDown={(e) => {
+                    if (e.key === "-" || e.key === "e") {
+                      e.preventDefault();
+                    }
+                  }}
+                  // 
                   placeholder="Enter Discount Percent"
                   className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
@@ -265,7 +310,8 @@ const AddProduct = () => {
               </div>
             </div>
 
-            <div className="mb-6">
+            {/* offers */}
+            {/* <div className="mb-6">
               <label className="block font-medium text-gray-700 mb-2">Offers (comma separated)</label>
               <Field
                 name="offers"
@@ -273,7 +319,46 @@ const AddProduct = () => {
                 className="w-full border bg-[#F5F5F5] border-gray-300 p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               <ErrorMessage name="offers" component="div" className="text-red-500 text-sm mt-1" />
+              </div> */}
+
+            {/* offers new with (+ Add Another Offer)  */}
+            <div className="mb-6">
+              <label className="block font-medium text-gray-700 mb-3">Offers</label>
+              <FieldArray name="offers">
+                {({ push, remove, form }) => (
+                  <>
+                    {form.values.offers.map((_, index) => (
+                      <div key={index} className="flex items-center gap-3 mb-3">
+                        <Field
+                          name={`offers.${index}`}
+                          placeholder={`Offer ${index + 1}`}
+                          className="flex-1 border bg-[#F5F5F5] border-gray-300 p-2 focus:outline-none"
+                        />
+
+                        {form.values.offers.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => remove(index)}
+                            className="bg-red-500 text-white px-4 py-2 rounded-md"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => push("")}
+                      className="text-[#7EC1B1] font-medium"
+                    >
+                      + Add Another Offer
+                    </button>
+                  </>
+                )}
+              </FieldArray>
             </div>
+            {/*  */}
 
             <div className="mb-6">
               <label className="block font-medium text-gray-700 mb-2">Description</label>
