@@ -329,6 +329,7 @@ const LoginPage = () => {
                     Forget Password?
                   </Link>
                 </div>
+                
                 <ErrorMessage
                   name="password"
                   component="p"
@@ -347,6 +348,14 @@ const LoginPage = () => {
                   Remember Me
                 </label>
               </div>
+              <div className="flex justify-start text-sm mt-1">
+                  <Link
+                    to="/register" 
+                  >
+                    Don't have an account?
+                    <span className="text-blue-500 hover:underline"> Register</span>
+                  </Link>
+                </div>
 
               {/* Button */}
               <motion.button
