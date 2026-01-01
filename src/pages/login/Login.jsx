@@ -1,194 +1,7 @@
-// import React, { useEffect } from "react";
-// import { motion } from "framer-motion";
-// import { Formik, Form, Field, ErrorMessage } from "formik";
-// import * as Yup from "yup";
-// import { FaPhone, FaLock } from "react-icons/fa"; 
-// import { useNavigate, Link } from "react-router-dom"; // Added Link
-// import { toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-
-// // --- REDUX IMPORTS ---
-// import { useDispatch, useSelector } from 'react-redux';
-// import { loginUser, clearMessage } from '../../redux/authSlice'; 
-
-// import amico from "../../assets/images/amico.png";
-
-// const LoginPage = () => {
-//   const navigate = useNavigate();
-//   const dispatch = useDispatch();
-
-//   // 1. Get Real State from Redux
-//   const { isLoading, error, token } = useSelector((state) => state.auth);
-
-//   // 2. Clear old errors when page loads
-//   useEffect(() => {
-//     dispatch(clearMessage());
-//   }, [dispatch]);
-
-//   // 3. Watch for Token (Success) or Error
-//   useEffect(() => {
-//     if (token) {
-//       toast.success("Login successful!");
-//       // Keep the delay from Code 1 for the smooth effect
-//       setTimeout(() => navigate("/dashboard" , { replace: true }), 1000);
-//     }
-    
-    
-//     if (error) {
-//       toast.error(typeof error === 'string' ? error : "Login Failed");
-//       dispatch(clearMessage()); // Clear error after showing toast
-//     }
-//   }, [token, error, navigate, dispatch]);
-
-//   // 4. Formik Initial Values
-//   const initialValues = {
-//     phone: "",
-//     password: "",
-//     remember: false,
-//   };
-
-//   // 5. Validation Schema
-//   const validationSchema = Yup.object({
-//     phone: Yup.string()
-//       .matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits")
-//       .required("Required"),
-//     password: Yup.string().required("Required"),
-//   });
-
-//   // 6. Real Submit Logic
-//   const handleSubmit = (values) => {
-//     // Dispatch the Redux action (API Call)
-//     dispatch(loginUser({ 
-//         phone: values.phone, 
-//         password: values.password 
-//     }));
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-[#88c4b9]">
-//       <motion.div
-//         initial={{ opacity: 0, y: 40 }}
-//         animate={{ opacity: 1, y: 0 }}
-//         transition={{ duration: 0.6 }}
-//         className="rounded-2xl flex flex-col md:flex-row w-[90%] max-w-4xl overflow-hidden"
-//       >
-//         {/* Left Side Image */}
-//         <div className="hidden md:flex items-center justify-center w-1/2 bg-[#88c4b9]">
-//           <motion.img
-//             initial={{ scale: 0.8, opacity: 0 }}
-//             animate={{ scale: 1, opacity: 1 }}
-//             transition={{ delay: 0.3, duration: 0.5 }}
-//             src={amico}
-//             alt="Login Illustration"
-//             className="w-[80%] h-auto"
-//           />
-//         </div>
-
-//         {/* Right Side Form */}
-//         <div className="w-full md:w-1/2 p-8 flex flex-col justify-center bg-white rounded-2xl">
-//           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-//             Welcome to Manufacturer Portal
-//           </h2>
-//           <p className="text-gray-500 mb-6">
-//             Please enter your registered mobile number and password to continue.
-//           </p>
-
-//           <Formik
-//             initialValues={initialValues}
-//             validationSchema={validationSchema}
-//             onSubmit={handleSubmit}
-//           >
-//             {({ values }) => (
-//               <Form className="space-y-5">
-                
-//                 {/* Phone Field */}
-//                 <div>
-//                   <label className="block text-gray-600 mb-1">
-//                     Phone Number
-//                   </label>
-//                   <div className="flex items-center border rounded-md px-3 py-2 bg-gray-50 focus-within:ring-2 focus-within:ring-[#88c4b9] transition">
-//                     <FaPhone className="text-gray-400 mr-2 transform rotate-90" />
-//                     <Field
-//                       type="tel"
-//                       name="phone"
-//                       className="w-full bg-transparent focus:outline-none"
-//                       placeholder="Enter 10-digit number"
-//                       maxLength="10" 
-//                     />
-//                   </div>
-//                   <ErrorMessage
-//                     name="phone"
-//                     component="p"
-//                     className="text-sm text-red-500 mt-1"
-//                   />
-//                 </div>
-
-//                 {/* Password Field */}
-//                 <div>
-//                   <label className="block text-gray-600 mb-1">Password</label>
-//                   <div className="flex items-center border rounded-md px-3 py-2 bg-gray-50 focus-within:ring-2 focus-within:ring-[#88c4b9] transition">
-//                     <FaLock className="text-gray-400 mr-2" />
-//                     <Field
-//                       type="password"
-//                       name="password"
-//                       className="w-full bg-transparent focus:outline-none"
-//                       placeholder="••••••••"
-//                     />
-//                   </div>
-//                   <div className="flex justify-end text-sm mt-1">
-//                     <Link
-//                       to="/forgot-password"
-//                       className="text-blue-500 text-sm hover:underline"
-//                     >
-//                       Forget Password?
-//                     </Link>
-//                   </div>
-//                   <ErrorMessage
-//                     name="password"
-//                     component="p"
-//                     className="text-sm text-red-500 mt-1"
-//                   />
-//                 </div>
-
-//                 {/* Remember Me */}
-//                 <div className="flex items-center space-x-2">
-//                   <Field
-//                     type="checkbox"
-//                     name="remember"
-//                     className="accent-[#88c4b9] w-4 h-4 cursor-pointer"
-//                   />
-//                   <label className="text-gray-600 text-sm cursor-pointer">Remember Me</label>
-//                 </div>
-
-//                 {/* Submit Button (Connected to Loading State) */}
-//                 <motion.button
-//                   type="submit"
-//                   disabled={isLoading} // Disable while calling API
-//                   whileHover={{ scale: 1.02 }}
-//                   whileTap={{ scale: 0.98 }}
-//                   className={`w-full text-white py-2.5 rounded-md font-medium transition ${
-//                     isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-[#88c4b9]"
-//                   }`}
-//                 >
-//                   {isLoading ? "Signing In..." : "Sign In"}
-//                 </motion.button>
-//               </Form>
-//             )}
-//           </Formik>
-//         </div>
-//       </motion.div>
-//     </div>
-//   );
-// };
-
-// export default LoginPage;
-
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { FaPhone, FaLock } from "react-icons/fa";
-import { useNavigate, Link } from "react-router-dom";
 import { FaPhone, FaLock } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -224,13 +37,9 @@ const LoginPage = () => {
     if (error) {
       toast.error(typeof error === "string" ? error : "Login Failed");
       dispatch(clearMessage());
-      toast.error(typeof error === "string" ? error : "Login Failed");
-      dispatch(clearMessage());
     }
   }, [error, dispatch]);
-  }, [error, dispatch]);
 
-  // Formik initial values
   // Formik initial values
   const initialValues = {
     phone: "",
@@ -254,12 +63,6 @@ const LoginPage = () => {
         password: values.password,
       })
     );
-    dispatch(
-      loginUser({
-        phone: values.phone,
-        password: values.password,
-      })
-    );
   };
 
   return (
@@ -270,7 +73,6 @@ const LoginPage = () => {
         transition={{ duration: 0.6 }}
         className="rounded-2xl flex flex-col md:flex-row w-[90%] max-w-4xl overflow-hidden"
       >
-        {/* Left Image */}
         {/* Left Image */}
         <div className="hidden md:flex items-center justify-center w-1/2 bg-[#88c4b9]">
           <motion.img
@@ -283,8 +85,6 @@ const LoginPage = () => {
           />
         </div>
 
-        {/* Right Form */}
-        <div className="w-full md:w-1/2 p-8 bg-white rounded-2xl">
         {/* Right Form */}
         <div className="w-full md:w-1/2 p-8 bg-white rounded-2xl">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
@@ -396,4 +196,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-
