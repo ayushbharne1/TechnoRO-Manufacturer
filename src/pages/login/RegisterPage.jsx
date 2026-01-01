@@ -85,7 +85,7 @@ export default function RegisterPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#7EC1B1] to-[#74c9c4] py-8 px-4">
+    <div className="min-h-screen bg-[#7EC1B1] py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Progress Steps */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
