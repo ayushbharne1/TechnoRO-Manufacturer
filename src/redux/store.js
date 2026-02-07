@@ -5,6 +5,7 @@ import productReducer from './productSlice';
 import profileReducer from './profileSlice';
 import orderReducer from './orderSlice';
 import inventoryReducer from './inventorySlice';
+import manufacturerRegistrationReducer from './Manufacturerregistrationslice';
 
 
 export const store = configureStore({
@@ -14,6 +15,7 @@ export const store = configureStore({
     profile: profileReducer,
     orders: orderReducer,
     inventory: inventoryReducer,
+    manufacturerRegistration: manufacturerRegistrationReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
