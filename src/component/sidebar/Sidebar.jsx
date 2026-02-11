@@ -19,7 +19,7 @@ import {
   LogoutIcon,
 } from "../../assets/icons/AllIcons";
 
-const Sidebar = () => {
+const Sidebar = ({ closeSidebar }) => {
   const { pathname } = useLocation();
   const dispatch = useDispatch(); // <--- 3. Initialize Hooks
   const navigate = useNavigate();
@@ -86,7 +86,8 @@ const Sidebar = () => {
   ];
 
   return (
-        <aside className="bg-[#FFFFFF] w-64 min-h-full border-r border-gray-200 flex flex-col py-6 shadow-sm border-t">      <div>
+        <aside className="bg-[#FFFFFF] w-64 min-h-full border-r border-gray-200 flex flex-col py-6 shadow-sm border-t">
+      <div>
         {/* Dashboard Link (Kept as is) */}
         <div className="px-6 mb-6">
           <Link
@@ -132,6 +133,7 @@ const Sidebar = () => {
                   <li key={item.path}>
                     <Link
                       to={item.path}
+                      onClick={closeSidebar}
                       className={`flex items-center gap-3 text-[14px] px-3 py-2 rounded-md transition-all ${
                         pathname === item.path
                           ? "bg-[#7EC1B1] text-white font-medium"

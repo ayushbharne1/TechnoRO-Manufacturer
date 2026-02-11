@@ -73,10 +73,19 @@ const VerifyOtp = () => {
     }
   };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !e.target.value && index > 0) {
-      const prevInput = document.querySelector(`input[name="otp${index}"]`);
-      if (prevInput) prevInput.focus();
+  const handleKeyDown = (e, index, setFieldValue) => {
+    if (e.key === "Backspace") {
+      const currentValue = e.target.value;
+      if (currentValue) {
+        setFieldValue(`otp${index + 1}`, "");
+        e.preventDefault();
+      } else if (index > 0) {
+        const prevInput = document.querySelector(`input[name="otp${index}"]`);
+        if (prevInput) {
+          setFieldValue(`otp${index}`, "");
+          prevInput.focus();
+        }
+      }
     }
   };
 
@@ -127,7 +136,7 @@ const VerifyOtp = () => {
                         name={name}
                         maxLength="1"
                         onChange={(e) => handleInputChange(e, index, setFieldValue)}
-                        onKeyDown={(e) => handleKeyDown(e, index)}
+                        onKeyDown={(e) => handleKeyDown(e, index, setFieldValue)}
                         className={`w-10 h-12 sm:w-12 sm:h-12 text-center border-2 rounded-lg text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-[#8DC9BE] ${
                           errors[name] && touched[name]
                             ? "border-red-400"

@@ -5,14 +5,48 @@ body {
   color: #1F2937;
 }
 
+/* Scrollbar hiding */
 .scrollbar-hidden {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .scrollbar-hidden::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
+
+aside::-webkit-scrollbar {
+  display: none;
+}
+
+aside {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Table responsive */
+table {
+  min-width: 100%;
+}
+
+@media (max-width: 768px) {
+  table {
+    font-size: 0.875rem;
+  }
+  
+  th, td {
+    padding: 0.5rem !important;
+  }
+}
+
 .leaflet-container {
   z-index: 0 !important;
 }

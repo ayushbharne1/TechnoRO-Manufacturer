@@ -2,8 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.svg";
 import kentLogo from "../../assets/images/kent.png";
+import { FiMenu } from "react-icons/fi";
 
-const Navbar = () => {
+const Navbar = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -26,18 +27,27 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow flex items-center justify-between px-6 py-3">
-      {/* Left Section - Logo + Title */}
+    <nav className="bg-white shadow flex items-center justify-between px-4 md:px-6 py-3">
+      {/* Left Section - Menu + Logo */}
       <div className="flex items-center space-x-3">
+        <button 
+          onClick={toggleSidebar}
+          className="lg:hidden text-gray-700 hover:text-gray-900"
+        >
+          <FiMenu size={24} />
+        </button>
         <img
           src={logo}
           alt="Techno RO Logo"
-          className="h-12 w-full object-contain"
+          className="h-10 md:h-12 w-auto object-contain"
         />
       </div>
 
       {/* Right Section - Manufacturer Info + Notification */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-2 md:space-x-4">
+        {/* Manufacturing Panel Text - Hidden on small screens */}
+        <h1 className="hidden md:block text-base lg:text-lg font-semibold text-gray-800">Manufacturing Panel</h1>
+        
         {/* Left Border + Bell Icon + Right Border */}
         <div
           ref={dropdownRef}
@@ -97,19 +107,19 @@ const Navbar = () => {
           tabIndex={0}
           onClick={() => navigate("/profile")}
           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate("/profile")}
-          className="flex items-center space-x-3 cursor-pointer"
+          className="flex items-center space-x-2 md:space-x-3 cursor-pointer"
           aria-label="Open profile"
         >
           <img
             src={kentLogo}
             alt="Kent Logo"
-            className="h-10 object-contain"
+            className="h-8 md:h-10 object-contain"
           />
-          <div className="text-right leading-tight">
-            <h3 className="text-sm font-semibold text-gray-800">
+          <div className="text-right leading-tight hidden sm:block">
+            <h3 className="text-xs md:text-sm font-semibold text-gray-800">
               Kent Pvt. Ltd.
             </h3>
-            <p className="text-xs text-gray-500">Manufacturer</p>
+            <p className="text-[10px] md:text-xs text-gray-500">Manufacturer</p>
           </div>
         </div>
       </div>

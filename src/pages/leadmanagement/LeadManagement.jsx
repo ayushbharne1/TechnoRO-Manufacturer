@@ -51,7 +51,7 @@ const LeadManagement = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg">
+    <div className="p-3 md:p-6 bg-white rounded-lg">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm mb-4">
         <button onClick={() => navigate("/dashboard")} className="text-gray-600 hover:text-gray-800">
@@ -61,10 +61,10 @@ const LeadManagement = () => {
       </div>
 
       {/* Title */}
-      <h1 className="text-2xl font-bold mb-6">Lead Management</h1>
+      <h1 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Lead Management</h1>
 
       {/* Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-3 md:gap-4 mb-4 md:mb-6">
         {/* Entries dropdown */}
         <div className="flex items-center gap-2">
           <span className="text-sm">Show</span>
@@ -74,7 +74,7 @@ const LeadManagement = () => {
               setEntriesPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="border border-gray-300 rounded px-3 py-2 text-sm"
+            className="border border-gray-300 rounded px-2 md:px-3 py-2 text-sm"
           >
             <option value={10}>10</option>
             <option value={25}>25</option>
@@ -84,7 +84,7 @@ const LeadManagement = () => {
         </div>
 
         {/* Search */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <input
             type="text"
             placeholder="Search"
@@ -93,19 +93,19 @@ const LeadManagement = () => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="border border-gray-300 rounded px-4 py-2 text-sm w-64"
+            className="border border-gray-300 rounded px-3 md:px-4 py-2 text-sm w-full sm:w-64"
           />
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <select
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="border border-gray-300 rounded px-4 py-2 text-sm"
+            className="border border-gray-300 rounded px-3 md:px-4 py-2 text-sm w-full sm:w-auto"
           >
             <option value="">Select Status</option>
             <option value="New">New</option>
@@ -117,39 +117,39 @@ const LeadManagement = () => {
         {/* Add Lead Button */}
         <button 
           onClick={() => navigate("/add-lead")}
-          className="bg-[#7EC1B1] text-white px-6 py-2 rounded hover:bg-[#6db09f] transition"
+          className="bg-[#7EC1B1] text-white px-4 md:px-6 py-2 rounded hover:bg-[#6db09f] transition w-full sm:w-auto"
         >
           Add lead
         </button>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border border-gray-200 rounded-lg">
-        <table className="w-full">
+      <div className="overflow-x-auto border border-gray-200 rounded-lg -mx-3 md:mx-0">
+        <table className="w-full min-w-[640px]">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Sr.No</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Lead ID</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Customer Name</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Service Type</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Product Model</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Order Date</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Status</th>
-              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Action</th>
+              <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs md:text-sm font-semibold text-gray-700">Sr.No</th>
+              <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs md:text-sm font-semibold text-gray-700">Lead ID</th>
+              <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs md:text-sm font-semibold text-gray-700">Customer Name</th>
+              <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs md:text-sm font-semibold text-gray-700 hidden sm:table-cell">Service Type</th>
+              <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs md:text-sm font-semibold text-gray-700 hidden md:table-cell">Product Model</th>
+              <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs md:text-sm font-semibold text-gray-700 hidden lg:table-cell">Order Date</th>
+              <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs md:text-sm font-semibold text-gray-700">Status</th>
+              <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs md:text-sm font-semibold text-gray-700">Action</th>
             </tr>
           </thead>
           <tbody>
             {currentData.length > 0 ? (
               currentData.map((lead, index) => (
                 <tr key={lead.id} className="border-t border-gray-200 hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm">{startIndex + index + 1}</td>
-                  <td className="px-4 py-3 text-sm text-blue-600">{lead.leadId}</td>
-                  <td className="px-4 py-3 text-sm">{lead.customerName}</td>
-                  <td className="px-4 py-3 text-sm">{lead.serviceType}</td>
-                  <td className="px-4 py-3 text-sm">{lead.productModel}</td>
-                  <td className="px-4 py-3 text-sm">{lead.orderDate}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className={`px-3 py-1 rounded-full text-xs ${
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm">{startIndex + index + 1}</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm text-blue-600">{lead.leadId}</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm">{lead.customerName}</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm hidden sm:table-cell">{lead.serviceType}</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm hidden md:table-cell">{lead.productModel}</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm hidden lg:table-cell">{lead.orderDate}</td>
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm">
+                    <span className={`px-2 md:px-3 py-1 rounded-full text-[10px] md:text-xs ${
                       lead.status === "New" ? "bg-blue-100 text-blue-700" :
                       lead.status === "In Progress" ? "bg-yellow-100 text-yellow-700" :
                       "bg-green-100 text-green-700"
@@ -157,16 +157,16 @@ const LeadManagement = () => {
                       {lead.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-2 md:px-4 py-2 md:py-3 text-xs md:text-sm">
                     <button className="text-blue-600 hover:text-blue-800">
-                      <FiEye size={20} />
+                      <FiEye size={16} className="md:w-5 md:h-5" />
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="px-4 py-8 text-center text-gray-500">
+                <td colSpan="8" className="px-4 py-8 text-center text-gray-500 text-sm">
                   No leads found
                 </td>
               </tr>
@@ -176,15 +176,15 @@ const LeadManagement = () => {
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-4">
-        <div className="text-sm text-gray-600">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+        <div className="text-xs md:text-sm text-gray-600">
           Showing {startIndex + 1} to {Math.min(endIndex, filteredData.length)} of {filteredData.length} entries
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-2 md:px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm"
           >
             Previous
           </button>
@@ -192,7 +192,7 @@ const LeadManagement = () => {
             <button
               key={i + 1}
               onClick={() => handlePageChange(i + 1)}
-              className={`px-3 py-1 border rounded ${
+              className={`px-2 md:px-3 py-1 border rounded text-xs md:text-sm ${
                 currentPage === i + 1
                   ? "bg-[#7EC1B1] text-white border-[#7EC1B1]"
                   : "border-gray-300 hover:bg-gray-50"
@@ -204,7 +204,7 @@ const LeadManagement = () => {
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-2 md:px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm"
           >
             Next
           </button>
