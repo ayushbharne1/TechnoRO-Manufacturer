@@ -1,39 +1,46 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux"; // <--- ADDED
+import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Import Redux actions
-import { sendOtp, clearMessage } from "../../redux/authSlice"; // <--- ADDED
+import { sendOtp, clearMessage } from "../../redux/authSlice";
 import forgotpassword from "../../assets/images/forgot-password.png";
 
 const ForgotPasswordForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [showOtpBanner, setShowOtpBanner] = useState(false);
 
-  // 1. Get Redux state
-  const { isLoading, error, message } = useSelector((state) => state.auth);
+  const { isLoading, error, message, otp } = useSelector((state) => state.auth);
 
   // 2. Clear old messages on load
   useEffect(() => {
     dispatch(clearMessage());
   }, [dispatch]);
 
-  // 3. Watch for Success -> Navigate to Verify Page
   useEffect(() => {
-    if (message === "OTP Sent Successfully!") {
-      toast.success("OTP Sent! Please checks your phone.");
-      
-      // Navigate to Verify OTP page
-      // We pass the phone number in 'state' so the next page knows who to verify
+    if (message === "OTP Sent Successfully!" && otp) {
+      setShowOtpBanner(true);
+      toast.success(
+        <div>
+          <p className="font-semibold">OTP Sent Successfully!</p>
+          <p className="text-lg font-bold mt-1">Your OTP: {otp}</p>
+        </div>,
+        { autoClose: 5000 }
+      );
       setTimeout(() => {
         navigate("/verifyOtp", { state: { phone: formik.values.phone } });
-      }, 1000);
+      }, 5000);
     }
-  }, [message, navigate]);
+  }, [message, otp, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
 
   const validationSchema = Yup.object({
     phone: Yup.string()
@@ -73,13 +80,6 @@ const ForgotPasswordForm = () => {
         <p className="text-gray-500 mb-6 text-sm">
           Please enter your registered mobile number to continue.
         </p>
-
-        {/* Show Error Message if API Fails */}
-        {error && (
-            <div className="mb-4 text-red-600 bg-red-100 p-3 rounded text-sm text-center">
-              {error}
-            </div>
-        )}
 
         <form onSubmit={formik.handleSubmit}>
           <div className="mb-4">

@@ -110,6 +110,7 @@ const authSlice = createSlice({
     isLoading: false,
     error: null,
     isVerifying: false,
+    otp: null,
   },
   reducers: {
     clearError: (state) => { state.error = null; },
@@ -144,9 +145,9 @@ const authSlice = createSlice({
       .addCase(logoutUser.fulfilled, (state) => { state.user = null; state.token = null; state.isAuthenticated = false; })
 
       // Send OTP
-      .addCase(sendOtp.pending, (state) => { state.loading = true; state.isLoading = true; state.error = null; state.message = null; })
-      .addCase(sendOtp.fulfilled, (state) => { state.loading = false; state.isLoading = false; state.message = "OTP Sent Successfully!"; })
-      .addCase(sendOtp.rejected, (state, action) => { state.loading = false; state.isLoading = false; state.error = action.payload; })
+      .addCase(sendOtp.pending, (state) => { state.loading = true; state.isLoading = true; state.error = null; state.message = null; state.otp = null; })
+      .addCase(sendOtp.fulfilled, (state, action) => { state.loading = false; state.isLoading = false; state.message = "OTP Sent Successfully!"; state.otp = action.payload.otp; })
+      .addCase(sendOtp.rejected, (state, action) => { state.loading = false; state.isLoading = false; state.error = action.payload; state.otp = null; })
 
       // Verify OTP
       .addCase(verifyOtp.pending, (state) => { state.loading = true; state.isLoading = true; state.error = null; })

@@ -30,6 +30,10 @@ import OrderList from "./pages/ordermanagement/OrderList";
 import OrderDetails from "./pages/ordermanagement/OrderDetails";
 import InvoicePage from "./pages/ordermanagement/InvoicePage";
 
+// Lead Management
+import LeadManagement from "./pages/leadmanagement/LeadManagement";
+import AddLead from "./pages/leadmanagement/AddLead";
+
 // Notifications & Profile
 import Notifications from "./pages/notification/Notifications";
 import Feedback from "./pages/notification/Feedback";
@@ -95,6 +99,10 @@ function App() {
             <Route path="/order-management" element={<OrderList />} />
             <Route path="/order-details/:id" element={<OrderDetails />} />
             <Route path="/invoice/:id" element={<InvoicePage />} />
+
+            {/* Lead Management */}
+            <Route path="/lead-management" element={<LeadManagement />} />
+            <Route path="/add-lead" element={<AddLead />} />
 
             {/* Reports */}
             <Route path="/reports" element={<StockConsumption />} />

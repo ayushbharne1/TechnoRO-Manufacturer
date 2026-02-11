@@ -12,6 +12,7 @@ import {
   InventoryIcon,
   ProductionIcon,
   OrderIcon,
+  LeadIcon,
   ReportIcon,
   ProfileIcon,
   HelpIcon,
@@ -54,13 +55,18 @@ const Sidebar = () => {
       items: [
         { path: "/product-list", label: "Product List", icon: ProductIcon },
         { path: "/inventory-management", label: "Inventory Management", icon: InventoryIcon },
-        // { path: "/production-management", label: "Production Management", icon: ProductionIcon },
       ],
     },
     {
       title: "Order Management",
       items: [
         { path: "/order-management", label: "Order Management", icon: OrderIcon },
+      ],
+    },
+    {
+      title: "Lead Management",
+      items: [
+        { path: "/lead-management", label: "Lead Management", icon: LeadIcon },
       ],
     },
     {

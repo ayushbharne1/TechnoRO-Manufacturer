@@ -49,7 +49,6 @@ const VerifyOtp = () => {
   }, [message, navigate, phone]);
 
   const handleSubmit = (values) => {
-    // Combine 6 digits into one string
     const otpString = `${values.otp1}${values.otp2}${values.otp3}${values.otp4}${values.otp5}${values.otp6}`;
 
     if (!phone) {
@@ -57,17 +56,27 @@ const VerifyOtp = () => {
       return;
     }
 
-    // Dispatch to Redux
     dispatch(verifyOtp({ 
         phone: phone, 
         otp: otpString 
     }));
   };
 
-  // Helper to auto-focus next input
-  const handleInputFocus = (e) => {
-    if (e.target.value && e.target.nextElementSibling) {
-        e.target.nextElementSibling.focus(); // Move to next
+  const handleInputChange = (e, index, setFieldValue) => {
+    const value = e.target.value;
+    if (value && /^[0-9]$/.test(value)) {
+      setFieldValue(`otp${index + 1}`, value);
+      if (index < 5) {
+        const nextInput = document.querySelector(`input[name="otp${index + 2}"]`);
+        if (nextInput) nextInput.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !e.target.value && index > 0) {
+      const prevInput = document.querySelector(`input[name="otp${index}"]`);
+      if (prevInput) prevInput.focus();
     }
   };
 
@@ -109,7 +118,7 @@ const VerifyOtp = () => {
             validationSchema={OtpSchema}
             onSubmit={handleSubmit}
           >
-            {({ errors, touched, handleChange }) => (
+            {({ errors, touched, setFieldValue }) => (
               <Form className="flex flex-col items-center space-y-6 w-full">
                 <div className="flex justify-center gap-2 sm:gap-3">
                   {["otp1", "otp2", "otp3", "otp4", "otp5", "otp6"].map((name, index) => (
@@ -117,7 +126,8 @@ const VerifyOtp = () => {
                       <Field
                         name={name}
                         maxLength="1"
-                        onKeyUp={handleInputFocus} // Auto-focus logic
+                        onChange={(e) => handleInputChange(e, index, setFieldValue)}
+                        onKeyDown={(e) => handleKeyDown(e, index)}
                         className={`w-10 h-12 sm:w-12 sm:h-12 text-center border-2 rounded-lg text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-[#8DC9BE] ${
                           errors[name] && touched[name]
                             ? "border-red-400"
