@@ -8,6 +8,7 @@ import Alert from "../../../assets/icons/alert.svg";
 import product4 from "../../../assets/images/product4.png"; 
 import * as XLSX from "xlsx";
 import { toast } from "react-toastify";
+import Loader from "../../../component/loader/Loader";
 
 // --- REDUX IMPORTS ---
 import { useDispatch, useSelector } from "react-redux";
@@ -146,6 +147,9 @@ const InventoryManagement = () => {
         </div>
 
         {/* Table */}
+        {isLoading && products.length === 0 ? (
+          <Loader />
+        ) : (
         <div className="overflow-x-auto border border-gray-200 rounded-md">
           <table className="w-full text-sm text-left border border-[#CACACA] border-separate border-spacing-0 rounded-md overflow-hidden">
             <thead className="bg-[#F5F5F5] text-gray-600 font-medium">
@@ -175,6 +179,7 @@ const InventoryManagement = () => {
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Pagination */}
         <div className="flex justify-between items-center mt-4 text-gray-600 text-sm">

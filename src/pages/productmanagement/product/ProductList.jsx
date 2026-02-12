@@ -6,6 +6,7 @@ import { MdArrowForwardIos } from "react-icons/md";
 import Dashboard from "../../../assets/images/Dashboard.svg";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllProducts } from "../../../redux/productSlice";
+import Loader from "../../../component/loader/Loader";
 
 const ProductList = () => {
   const navigate = useNavigate();
@@ -167,7 +168,11 @@ const ProductList = () => {
         </div>
 
         {/* Table Component - Pass onDelete handler */}
-        <ProductTable products={visibleProducts.length ? visibleProducts : products} onDelete={handleDeleteClick} />
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <ProductTable products={visibleProducts.length ? visibleProducts : products} onDelete={handleDeleteClick} />
+        )}
 
         {/* Pagination */}
         <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
