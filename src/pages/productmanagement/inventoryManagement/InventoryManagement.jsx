@@ -41,6 +41,7 @@ const InventoryManagement = () => {
   useEffect(() => {
     if (successMessage) {
         toast.success(successMessage);
+        dispatch(fetchInventory()); // Refresh inventory data
         dispatch(resetInventoryState());
         setShowAddInventoryModal(false);
     }
@@ -82,7 +83,14 @@ const InventoryManagement = () => {
   const handleDecrement = () => { if (quantity > 1) setQuantity(prev => prev - 1); };
 
   const handleAddInventory = () => {
-    if (!selectedProduct) return;
+    if (!selectedProduct || !selectedProduct._id) {
+      toast.error("Product not selected");
+      return;
+    }
+    if (quantity <= 0) {
+      toast.error("Quantity must be greater than 0");
+      return;
+    }
     dispatch(updateStock({ id: selectedProduct._id, quantity: quantity }));
   };
 
@@ -163,7 +171,15 @@ const InventoryManagement = () => {
                 <tr key={product._id} className="">
                   <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">{(currentPage - 1) * entriesPerPage + index + 1}</td>
                   <td className="px-4 py-3 border-b border-[#CACACA] text-center">
-                    <img src={product.images?.[0] || product4} alt={product.name} className="w-8 h-8 object-contain mx-auto" onError={(e)=>{e.target.src=product4}}/>
+                    <img 
+                      src={product.images?.[0] || product.image || product4} 
+                      alt={product.name} 
+                      className="w-8 h-8 object-contain mx-auto" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = product4;
+                      }}
+                    />
                   </td>
                   <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 truncate max-w-xs text-center">{product.name}</td>
                   <td className="px-4 py-3 border-b border-[#CACACA] text-gray-700 text-center">{product.category}</td>
@@ -208,7 +224,15 @@ const InventoryManagement = () => {
                   <div key={item._id} className="flex items-center justify-between gap-4 pb-4 border-b border-gray-200 last:border-b-0">
                     <div className="flex items-center gap-4">
                       <div className="w-16 h-16 border border-gray-300 rounded flex items-center justify-center bg-white p-2">
-                        <img src={item.images?.[0] || product4} alt={item.name} className="w-full h-full object-contain" onError={(e)=>{e.target.src=product4}}/>
+                        <img 
+                          src={item.images?.[0] || item.image || product4} 
+                          alt={item.name} 
+                          className="w-full h-full object-contain" 
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = product4;
+                          }}
+                        />
                       </div>
                       <div><h3 className="font-medium text-gray-800">{item.name}</h3><p className="text-sm text-gray-600">Qty: {item.stock}</p></div>
                     </div>

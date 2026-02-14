@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux"; // <--- 1. Import Hook
+import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/authSlice";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 import {
   Dashboard,
@@ -21,8 +22,16 @@ import {
 
 const Sidebar = ({ closeSidebar }) => {
   const { pathname } = useLocation();
-  const dispatch = useDispatch(); // <--- 3. Initialize Hooks
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [openDropdowns, setOpenDropdowns] = useState({});
+
+  const toggleDropdown = (title) => {
+    setOpenDropdowns(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
 
   // --- LOGOUT LOGIC ---
   const handleLogout = () => {
@@ -104,12 +113,51 @@ const Sidebar = ({ closeSidebar }) => {
         </div>
 
         {/* Menu Sections */}
-        {sections.map((section) => (
+        {sections.map((section) => {
+          const hasMultipleItems = section.items.length > 1;
+          const isOpen = openDropdowns[section.title];
+          
+          return (
           <div key={section.title} className="px-4 mb-6">
-            <h3 className="text-[13px] font-semibold text-[#263138] uppercase mb-2 tracking-wide">
-              {section.title}
-            </h3>
-            <ul className="space-y-1">
+            {hasMultipleItems ? (
+              <>
+                <button
+                  onClick={() => toggleDropdown(section.title)}
+                  className="w-full flex items-center justify-between text-[13px] font-semibold text-[#263138] uppercase mb-2 tracking-wide hover:text-[#7EC1B1] transition-colors"
+                >
+                  <span>{section.title}</span>
+                  {isOpen ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />}
+                </button>
+                {isOpen && (
+                  <ul className="space-y-1">
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <li key={item.path}>
+                          <Link
+                            to={item.path}
+                            onClick={closeSidebar}
+                            className={`flex items-center gap-3 text-[14px] px-3 py-2 rounded-md transition-all ${
+                              pathname === item.path
+                                ? "bg-[#7EC1B1] text-white font-medium"
+                                : "text-[#7EC1B1] hover:bg-gray-50"
+                            }`}
+                          >
+                            <Icon className="text-current w-5 h-5" />
+                            {item.label}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </>
+            ) : (
+              <>
+                <h3 className="text-[13px] font-semibold text-[#263138] uppercase mb-2 tracking-wide">
+                  {section.title}
+                </h3>
+                <ul className="space-y-1">
               {section.items.map((item) => {
                 const Icon = item.icon;
 
@@ -147,8 +195,11 @@ const Sidebar = ({ closeSidebar }) => {
                 );
               })}
             </ul>
+            </>
+            )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </aside>
   );

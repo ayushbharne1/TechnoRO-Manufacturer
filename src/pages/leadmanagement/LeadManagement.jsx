@@ -27,11 +27,13 @@ const LeadManagement = () => {
 
   // Filter data
   const filteredData = leadsData.filter((lead) => {
-    const matchesSearch = 
-      lead.leadId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.serviceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.productModel.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    const matchesSearch = searchLower === "" || 
+      lead.leadId.toLowerCase().includes(searchLower) ||
+      lead.customerName.toLowerCase().includes(searchLower) ||
+      lead.serviceType.toLowerCase().includes(searchLower) ||
+      lead.productModel.toLowerCase().includes(searchLower);
     
     const matchesStatus = statusFilter === "" || lead.status === statusFilter;
     
